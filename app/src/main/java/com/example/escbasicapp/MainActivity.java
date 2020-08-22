@@ -1,7 +1,14 @@
 package com.example.escbasicapp;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
+import android.Manifest;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageButton;
@@ -25,8 +32,35 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        checkPermissions();
+
         setUpUI();
 
+        if(phoneNum.getText().length() == 0) {
+            message.setVisibility(View.GONE);
+            backspace.setVisibility(View.GONE);
+        }
+    }
+
+    private void checkPermissions(){
+        int resultCall = ContextCompat.checkSelfPermission(this,Manifest.permission.CALL_PHONE);
+        int resultSms = ContextCompat.checkSelfPermission(this,Manifest.permission.SEND_SMS);
+
+        if (resultCall == PackageManager.PERMISSION_DENIED || resultSms == PackageManager.PERMISSION_DENIED) {
+            ActivityCompat.requestPermissions(this,new String[]{Manifest.permission.CALL_PHONE,Manifest.permission.SEND_SMS},1001);
+
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        if(requestCode == 1001){
+            if(grantResults.length>0&&grantResults[0] == PackageManager.PERMISSION_GRANTED && grantResults[1] == PackageManager.PERMISSION_GRANTED){
+                Toast.makeText(this,"권한 허용 됨",Toast.LENGTH_SHORT).show();
+            }
+        }
     }
 
     private void setUpUI() {
@@ -72,6 +106,9 @@ public class MainActivity extends AppCompatActivity {
         message.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                Intent messageIntent = new Intent(MainActivity.this, MessageActivity.class);
+                messageIntent.putExtra("phone_num",phoneNum.getText().toString());
+                startActivity(messageIntent);
                 //TODO:메세지
             }
         });
@@ -79,6 +116,8 @@ public class MainActivity extends AppCompatActivity {
         call.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                Intent callIntent = new Intent(Intent.ACTION_CALL, Uri.parse("tel:" + phoneNum.getText()));
+                startActivity(callIntent);
                 //TODO: 전화
             }
         });
@@ -88,7 +127,23 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View view) {
                 if(phoneNum.getText().length() > 0) {
                     phoneNum.setText(changeToDial(phoneNum.getText().subSequence(0, phoneNum.getText().length() - 1).toString()));
+                    if(phoneNum.getText().length()==0){
+                        message.setVisibility(View.GONE);
+                        backspace.setVisibility(View.GONE);
+                    }
                 }
+            }
+        });
+
+        backspace.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View view) {
+                phoneNum.setText("");
+
+                message.setVisibility(View.GONE);
+                backspace.setVisibility(View.GONE);
+
+                return true;
             }
         });
     }
@@ -97,6 +152,9 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 phoneNum.setText(changeToDial(phoneNum.getText() + input));
+
+                message.setVisibility(View.VISIBLE);
+                backspace.setVisibility(View.VISIBLE);
             }
         });
     }
