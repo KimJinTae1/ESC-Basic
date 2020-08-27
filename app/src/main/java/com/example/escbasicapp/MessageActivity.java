@@ -5,9 +5,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
 import android.os.Bundle;
+import android.provider.Telephony;
 import android.telephony.PhoneNumberFormattingTextWatcher;
 import android.telephony.SmsManager;
-import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
@@ -22,7 +22,6 @@ public class MessageActivity extends AppCompatActivity {
     private EditText content;
     private FloatingActionButton send;
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -33,12 +32,12 @@ public class MessageActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        String getphoneNum = getIntent().getStringExtra("phone_num");
-        phoneNum.setText(getphoneNum);
+        String getPhoneNUm = getIntent().getStringExtra("phone_num");
         phoneNum.addTextChangedListener(new PhoneNumberFormattingTextWatcher());
+        phoneNum.setText(getPhoneNUm);
     }
 
-    private void setUpUI() {
+    private void setUpUI(){
         toolbar = findViewById(R.id.message_toolbar);
         phoneNum = findViewById(R.id.message_et_phone);
         content = findViewById(R.id.message_et_content);
@@ -47,26 +46,24 @@ public class MessageActivity extends AppCompatActivity {
         send.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                try{
+                try {
                     SmsManager smsManager = SmsManager.getDefault();
-                    smsManager.sendTextMessage(phoneNum.getText().toString(),null,content.getText().toString(),null,null);
+                    smsManager.sendTextMessage(phoneNum.getText().toString(), null, content.getText().toString(), null, null);
                     finish();
-                    Toast.makeText(MessageActivity.this,"SUCCESS", Toast.LENGTH_SHORT).show();
-                } catch(Exception e){
-                    Toast.makeText(MessageActivity.this, "FALE",Toast.LENGTH_SHORT).show();
+                    Toast.makeText(MessageActivity.this,"SUCCESS",Toast.LENGTH_SHORT).show();
+                }catch (Exception e){
+                    Toast.makeText(MessageActivity.this, "Failed", Toast.LENGTH_SHORT).show();
                 }
-                // TODO 메세지보내기
             }
         });
     }
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        switch(item.getItemId()){
+        switch (item.getItemId()) {
             case android.R.id.home:
                 finish();
         }
-
         return super.onOptionsItemSelected(item);
     }
 }
